@@ -1,0 +1,5 @@
+username: test_user
+password: Qwerty1
+host: localhost
+port: 3306
+db_name: db_test
