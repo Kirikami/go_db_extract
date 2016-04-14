@@ -1,25 +1,23 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/csv"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	_ "time"
-)
 
-type Config struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Db_name  string
-}
+	"github.com/kirikami/go_db_extractor/config"
+	"github.com/kirikami/go_db_extractor/database"
+)
 
 type Users struct {
 	User_ID int    `sql:"AUTO_INCREMENT"`
