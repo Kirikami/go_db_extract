@@ -1,3 +1,0 @@
-mysql:
-  image: mysql:latest
-  command: sleep infinity

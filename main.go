@@ -36,17 +36,21 @@ func main() {
 	var dbConnection string
 
 	source, err := ioutil.ReadFile("config.yml")
-	checkError("Cannot read config", err)
+
+	if err != nil {
+		log.Fatalf("Cannot read config: %s", err)
+	}
 
 	err = yaml.Unmarshal(source, &config)
-	checkError("Cannot parce yaml", err)
+	if err != nil {
+		log.Fatalf("Cannot parce yaml: %s", err)
+	}
 
 	dbConnection = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", config.Username, config.Password, config.Host, config.Port, config.Db_name)
-	db, err := gorm.Open("mysql", dbConnection)
-	checkError("failed to connect database", err)
+	db, err := sqlx.Open("mysql", dbConnection)
+	if err != nil {
+		log.Fatalf("Failed to connect database: %s", err)
 
-	db.DB()
-	db.DB().Ping()
 	//start := time.Now()
 	//	ch := make(chan string)
 	//	for _, tablename := range os.Args[1:] {
@@ -54,17 +58,8 @@ func main() {
 	//	}
 }
 
-func dumpTable(db *gorm.DB, tablename string) {
-	users := []Users{}
-	sales := []Sales{}
+func dumpTable(db *sqlx.DB, tablename string) {
 
-	file, err := os.Create(tablename + ".csv")
-	checkError("Cannot create file", err)
-
-	defer file.Close()
-
-	writer := csv.NewWriter(file)
-	fmt.Println(tablename)
 	if tablename == "users" {
 		fmt.Println("Chosen users")
 		db.Select("*").Find(&users)
@@ -94,8 +89,9 @@ func checkError(message string, err error) {
 	}
 }
 
-func UserTableDataProvider() {
-
+func UserTableDataProvider(db *sqlx.DB) {
+	record := fetchDatabase(db)
+	
 }
 
 func SalesTableDataProvider() {
