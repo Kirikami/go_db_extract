@@ -34,6 +34,7 @@ func main() {
 
 	var config Config
 	var dbConnection string
+
 	source, err := ioutil.ReadFile("config.yml")
 	checkError("Cannot read config", err)
 
@@ -93,6 +94,10 @@ func checkError(message string, err error) {
 	}
 }
 
-func archiveFile(filename string) {
+func UserTableDataProvider() {
+
+}
+
+func SalesTableDataProvider() {
 
 }
