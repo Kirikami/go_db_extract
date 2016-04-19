@@ -14,6 +14,7 @@ import (
 
 func main() {
 	configfile := flag.String("Configfile", "config.toml", "a string")
+	flag.Parse()
 	configs := MustNewConfig(configfile)
 	ch := make(chan string)
 	for _, config := range configs {
