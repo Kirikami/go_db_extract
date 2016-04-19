@@ -9,14 +9,14 @@ import (
 )
 
 type User struct {
-	UserID int    `sql:"AUTO_INCREMENT"`
-	Name   string `sql:"varchar(255)"`
+	UserID int    `db:"user_id"`
+	Name   string `db:"name"`
 }
 
 type Saller struct {
-	OrderID     int     `sql:"AUTO_INCREMENT"`
-	UserID      int     `sql:"type:int(10)"`
-	OrderAmount float64 `sql:"type:float(50)"`
+	OrderID     int     `db:"order_id"`
+	UserID      int     `db:"user_id"`
+	OrderAmount float64 `db:"order_amount"`
 }
 
 type database struct {
