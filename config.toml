@@ -1,0 +1,17 @@
+title = "Database config"
+
+[one_database]
+Username = "test_user"
+Password = "Qwerty1"
+Host = "localhost"
+Port = 3306
+DB_name = "db_test"
+FilePath = "one_database"
+
+[second_database]
+Username = "test_user"
+Password = "Qwerty1"
+Host = "localhost"
+Port = 3306
+DB_name = "second_db"
+FilePath = "second_database"
