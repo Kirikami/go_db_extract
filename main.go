@@ -13,13 +13,14 @@ import (
 )
 
 func main() {
-
+	configfile := flag.String("Configfile", "config.toml", "a string")
+	configs := MustNewConfig(configfile)
 	ch := make(chan string)
 	for _, config := range configs {
-		go fetchDatabase(db, ch)
-		db := ConnectToNewDatabase(config)
-		UserTableDataProvider(db, config)
-		SalesTableDataProvider(db, config)
+		go func() {
+			db := MustNewDatabase(config)
+			fetchDatabase(db, ch)
+		}()
 	}
 }
 

@@ -35,7 +35,7 @@ func UserTableDataProvider(db *sqlx.DB, c *Config) {
 		log.Fatalf("Failed to fetch data: %s", err)
 	}
 	for _, record := range users {
-		records := append(records, strconv.Itoa(recorde.User_ID), record.Name)
+		records := append(records, strconv.Itoa(record.UserID), record.Name)
 	}
 	generateCSV("users", c.FilePath, records)
 
@@ -50,7 +50,7 @@ func SalesTableDataProvider(db *sqlx.DB, c *Config) {
 		log.Fatalf("Failed to fetch data: %s", err)
 	}
 	for _, record := range users {
-		records := append(records, strconv.Itoa(value.Order_ID), strconv.Itoa(value.User_ID), strconv.FormatFloat(value.Order_amount, 'f', 6, 64))
+		records := append(records, strconv.Itoa(value.OrderID), strconv.Itoa(value.UserID), strconv.FormatFloat(value.OrderAmount, 'f', 6, 64))
 	}
 	generateCSV("sales", c.FilePath, records)
 

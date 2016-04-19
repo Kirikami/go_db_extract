@@ -9,22 +9,22 @@ import (
 )
 
 type User struct {
-	User_ID int    `sql:"AUTO_INCREMENT"`
-	Name    string `sql:"varchar(255)"`
+	UserID int    `sql:"AUTO_INCREMENT"`
+	Name   string `sql:"varchar(255)"`
 }
 
 type Saller struct {
-	Order_ID     int     `sql:"AUTO_INCREMENT"`
-	User_ID      int     `sql:"type:int(10)"`
-	Order_amount float64 `sql:"type:float(50)"`
+	OrderID     int     `sql:"AUTO_INCREMENT"`
+	UserID      int     `sql:"type:int(10)"`
+	OrderAmount float64 `sql:"type:float(50)"`
 }
 
 type database struct {
 	db *sqlx.DB
 }
 
-func ConnectToNewDatabase(c *Config) *sqlx.DB {
-	dbConnection := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", c.Username, c.Password, c.Host, c.Port, c.Db_name)
+func MustNewDatabase(c Config) *sqlx.DB {
+	dbConnection := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", c.Username, c.Password, c.Host, c.Port, c.DbName)
 	db, err := sqlx.Open("mysql", dbConnection)
 	if err != nil {
 		log.Fatalf("Failed to connect database: %s", err)
