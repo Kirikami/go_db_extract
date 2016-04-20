@@ -1,38 +1,44 @@
 package main
 
 import (
-	"database/sql"
+	"flag"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	_ "github.com/lib/pq"
-	_ "time"
-
+	"github.com/jmoiron/sqlx"
 	"github.com/kirikami/go_db_extract/config"
 	"github.com/kirikami/go_db_extract/database"
 	"github.com/kirikami/go_db_extract/services"
+	"time"
 )
 
 func main() {
-	configfile := flag.String("Configfile", "config.toml", "a string")
+	configfile := flag.Arg(0)
+	if configfile == "" {
+		configfile = "config.toml"
+	}
 	flag.Parse()
-	configs := MustNewConfig(configfile)
+	configs := config.MustNewConfig(configfile)
 	ch := make(chan string)
-	for _, config := range configs {
+	for _, config := range configs.Database {
 		go func() {
-			db := MustNewDatabase(config)
-			fetchDatabase(db, ch)
-			err := archiveFile(config.FilePath, config.DbName+"_"+time.Now())
+			db := database.MustNewDatabase(config)
+			fetchDatabase(db, config, ch)
+			err := services.ArchiveFile(config.FilePath, config.DbName) //+"_"+time.Now())
+			if err != nil {
+				log.Fatalf("Archieving failed: %s", err)
+			}
 		}()
+		time.Sleep(time.Millisecond * 5000)
 	}
 }
 
-func fetchDatabase(db *sqlx.DB, ch chan<- string) {
+func fetchDatabase(db *sqlx.DB, c config.Config, ch chan<- string) {
 	start := time.Now()
-	err := UserTableDataProvider(db)
+	err := services.UserTableDataProvider(db, c)
 	if err != nil {
 		log.Fatalf("Failed to dump database: %s", err)
 	}
-	err := SalesTableDataProvider(db)
+	err = services.SalesTableDataProvider(db, c)
 	if err != nil {
 		log.Fatalf("Failed to dump database: %s", err)
 	}

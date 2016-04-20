@@ -1,17 +1,17 @@
 title = "Database config"
 
-[one_database]
+[[database]]
+DbName = "db_test"
 Username = "test_user"
 Password = "Qwerty1"
 Host = "localhost"
 Port = 3306
-DB_name = "db_test"
 FilePath = "one_database"
 
-[second_database]
+[[database]]
+DbName = "second_db"
 Username = "test_user"
 Password = "Qwerty1"
 Host = "localhost"
 Port = 3306
-DB_name = "second_db"
 FilePath = "second_database"

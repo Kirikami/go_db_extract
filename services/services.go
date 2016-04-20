@@ -2,14 +2,15 @@ package services
 
 import (
 	"archive/tar"
-	"bytes"
 	"encoding/csv"
+	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	"github.com/jmoiron/sqlx"
 	"github.com/kirikami/go_db_extract/config"
 	"github.com/kirikami/go_db_extract/database"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -26,65 +27,73 @@ var (
 var (
 	ErrCantFetchData = errors.New("Failed to fetch data")
 )
+var (
+	ErrCantCreateDirectory = errors.New("Cant create directory")
+)
 
-func generateCSV(tablename, filepath string, records []string) error {
-	file, err := os.Create(filepath + tablename + ".csv")
+var writeReult []string
+
+func generateCSV(tablename, filepath string, records [][]string) error {
+	folder, err := folderExists(filepath)
+	if folder != true {
+		os.Mkdir(filepath, 0777)
+	}
+	if err != nil {
+		return ErrCantCreateDirectory
+	}
+	file, err := os.Create(filepath + "/" + tablename + ".csv")
 	if err != nil {
 		return ErrCantCreateFile
 	}
 	defer file.Close()
 	writer := csv.NewWriter(file)
 	for _, stringToWrite := range records {
-		err := writer.Write(strings.Split(stringToWrite))
+		err := writer.Write(stringToWrite)
 		if err != nil {
 			return ErrCantWriteFile
 		}
-	}
-	err := writer.Write("There are %d records in databse")
-	if err != nil {
-		return ErrCantWriteFile
 	}
 	defer writer.Flush()
 	return nil
 }
 
-func UserTableDataProvider(db *sqlx.DB, c *Config) error {
-	user := Users{}
-	users := []User{}
-	err = db.Select(&users, "SELECT * FROM users")
+func UserTableDataProvider(db *sqlx.DB, c config.Config) error {
+	users := []database.User{}
+	err := db.Select(&users, "SELECT * FROM users")
 	if err != nil {
 		return ErrCantFetchData
 	}
-	records := make([]string, len(users))
+	records := make([][]string, len(users)-2)
 	for _, record := range users {
-		records := append(records, strconv.Itoa(record.UserID), record.Name)
+		records = append(records, []string{strconv.Itoa(record.UserID), record.Name})
 	}
-	err := generateCSV("users", c.FilePath, records)
+	records = append(records, []string{fmt.Sprintf("There are %d records in database", len(users))})
+	err = generateCSV("users", c.FilePath, records)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func SalesTableDataProvider(db *sqlx.DB, c *Config) error {
-	seller := Seller{}
-	sales := []Seller{}
+func SalesTableDataProvider(db *sqlx.DB, c config.Config) error {
+	sales := []database.Seller{}
 	err := db.Select(&sales, "SELECT * FROM sales")
 	if err != nil {
 		return ErrCantFetchData
 	}
-	records := make([]string, len(sales))
+	records := make([][]string, len(sales)-2)
 	for _, record := range sales {
-		records := append(records, strconv.Itoa(value.OrderID), strconv.Itoa(value.UserID), strconv.FormatFloat(value.OrderAmount, 'f', 6, 64))
+		records = append(records, []string{strconv.Itoa(record.OrderID), strconv.Itoa(record.UserID), strconv.FormatFloat(record.OrderAmount, 'f', 6, 64)})
 	}
-	err := generateCSV("sales", c.FilePath, records)
+	records = append(records, []string{fmt.Sprintf("There are %d records in database", len(sales))})
+	err = generateCSV("sales", c.FilePath, records)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func archiveFile(source, target string) error {
+func ArchiveFile(source, target string) error {
 	filename := filepath.Base(source)
 	target = filepath.Join(target, fmt.Sprintf("%s.tar", filename))
 	tarfile, err := os.Create(target)
@@ -136,4 +145,15 @@ func archiveFile(source, target string) error {
 			_, err = io.Copy(tarball, file)
 			return err
 		})
+}
+
+func folderExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
 }

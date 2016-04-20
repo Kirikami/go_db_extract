@@ -15,15 +15,20 @@ type Config struct {
 	FilePath string
 }
 
-func MustNewConfig(configfile string) Config {
+type tomlConfig struct {
+	Database []Config
+}
+
+func MustNewConfig(configfile string) tomlConfig {
 	_, err := os.Stat(configfile)
 	if err != nil {
 		log.Fatal("Config file is missing: ", configfile)
 	}
 
-	var config Config
-	if _, err := toml.DecodeFile(configfile, &config); err != nil {
+	var tomlconf tomlConfig
+	_, err = toml.DecodeFile(configfile, &tomlconf)
+	if err != nil {
 		log.Fatal(err)
 	}
-	return config
+	return tomlconf
 }

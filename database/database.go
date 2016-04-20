@@ -13,17 +13,13 @@ type User struct {
 	Name   string `db:"name"`
 }
 
-type Saller struct {
+type Seller struct {
 	OrderID     int     `db:"order_id"`
 	UserID      int     `db:"user_id"`
 	OrderAmount float64 `db:"order_amount"`
 }
 
-type database struct {
-	db *sqlx.DB
-}
-
-func MustNewDatabase(c Config) *sqlx.DB {
+func MustNewDatabase(c config.Config) *sqlx.DB {
 	dbConnection := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", c.Username, c.Password, c.Host, c.Port, c.DbName)
 	db, err := sqlx.Open("mysql", dbConnection)
 	if err != nil {
