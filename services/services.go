@@ -17,55 +17,71 @@ import (
 var (
 	ErrCantReadFile = errors.New("Cant read file")
 )
+var (
+	ErrCantCreateFile = errors.New("Cannot create file")
+)
+var (
+	ErrCantWriteFile = errors.New("Cannot write to file")
+)
+var (
+	ErrCantFetchData = errors.New("Failed to fetch data")
+)
 
-func generateCSV(tablename, filepath string, records []string) err {
+func generateCSV(tablename, filepath string, records []string) error {
 	file, err := os.Create(filepath + tablename + ".csv")
 	if err != nil {
-		log.Fatalf("Cannot create file: %s", err)
+		return ErrCantCreateFile
 	}
 	defer file.Close()
 	writer := csv.NewWriter(file)
 	for _, stringToWrite := range records {
 		err := writer.Write(strings.Split(stringToWrite))
 		if err != nil {
-			log.Fatalf("Cannot write to file: %s", err)
+			return ErrCantWriteFile
 		}
 	}
 	err := writer.Write("There are %d records in databse")
 	if err != nil {
-		log.Fatalf("Cannot write to file: %s", err)
+		return ErrCantWriteFile
 	}
 	defer writer.Flush()
+	return nil
 }
 
-func UserTableDataProvider(db *sqlx.DB, c *Config) {
+func UserTableDataProvider(db *sqlx.DB, c *Config) error {
 	user := Users{}
 	users := []User{}
-	var records []string
 	err = db.Select(&users, "SELECT * FROM users")
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %s", err)
+		return ErrCantFetchData
 	}
+	records := make([]string, len(users))
 	for _, record := range users {
 		records := append(records, strconv.Itoa(record.UserID), record.Name)
 	}
-	generateCSV("users", c.FilePath, records)
-
+	err := generateCSV("users", c.FilePath, records)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func SalesTableDataProvider(db *sqlx.DB, c *Config) {
+func SalesTableDataProvider(db *sqlx.DB, c *Config) error {
 	seller := Seller{}
 	sales := []Seller{}
-	var records []string
 	err := db.Select(&sales, "SELECT * FROM sales")
 	if err != nil {
-		log.Fatalf("Failed to fetch data: %s", err)
+		return ErrCantFetchData
 	}
-	for _, record := range users {
+	records := make([]string, len(sales))
+	for _, record := range sales {
 		records := append(records, strconv.Itoa(value.OrderID), strconv.Itoa(value.UserID), strconv.FormatFloat(value.OrderAmount, 'f', 6, 64))
 	}
-	generateCSV("sales", c.FilePath, records)
-
+	err := generateCSV("sales", c.FilePath, records)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func archiveFile(source, target string) error {

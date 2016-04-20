@@ -27,8 +27,14 @@ func main() {
 
 func fetchDatabase(db *sqlx.DB, ch chan<- string) {
 	start := time.Now()
-	UserTableDataProvider(db)
-	SalesTableDataProvider(db)
+	err := UserTableDataProvider(db)
+	if err != nil {
+		log.Fatalf("Failed to dump database: %s", err)
+	}
+	err := SalesTableDataProvider(db)
+	if err != nil {
+		log.Fatalf("Failed to dump database: %s", err)
+	}
 	secs := time.Since(start).Seconds()
 	ch <- fmt.Sprintf("%.2fs, %s", secs, db)
 }
