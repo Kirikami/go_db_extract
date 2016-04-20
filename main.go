@@ -21,6 +21,7 @@ func main() {
 		go func() {
 			db := MustNewDatabase(config)
 			fetchDatabase(db, ch)
+			err := archiveFile(config.FilePath, config.DbName+"_"+time.Now())
 		}()
 	}
 }
