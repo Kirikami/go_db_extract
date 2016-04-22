@@ -12,35 +12,31 @@ import (
 )
 
 func main() {
-	configfile := flag.Arg(0)
-	if configfile == "" {
-		configfile = "config.toml"
-	}
+	configfile := flag.String("config", "config.toml", "Config for connection to database")
 	flag.Parse()
 	configs := config.MustNewConfig(configfile)
 	ch := make(chan string)
 	for _, config := range configs.Database {
 		go func() {
 			db := database.MustNewDatabase(config)
-			fetchDatabase(db, config, ch)
-			err := services.ArchiveFile(config.FilePath, config.DbName) //+"_"+time.Now())
-			if err != nil {
-				log.Fatalf("Archieving failed: %s", err)
-			}
+			archiveDatabase(db, config, ch)
 		}()
-		time.Sleep(time.Millisecond * 5000)
 	}
 }
 
-func fetchDatabase(db *sqlx.DB, c config.Config, ch chan<- string) {
+func archiveDatabase(db *sqlx.DB, c config.Config, ch chan<- string) {
 	start := time.Now()
 	err := services.UserTableDataProvider(db, c)
 	if err != nil {
-		log.Fatalf("Failed to dump database: %s", err)
+		log.Fatalf("Failed to dump user database: %s", err)
 	}
 	err = services.SalesTableDataProvider(db, c)
 	if err != nil {
-		log.Fatalf("Failed to dump database: %s", err)
+		log.Fatalf("Failed to dump sales database: %s", err)
+	}
+	err = services.ArchiveFile(c.FilePath, ".")
+	if err != nil {
+		log.Fatalf("Archieving failed: %s", err)
 	}
 	secs := time.Since(start).Seconds()
 	ch <- fmt.Sprintf("%.2fs, %s", secs, db)

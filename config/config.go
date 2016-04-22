@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"github.com/BurntSushi/toml"
 	log "github.com/Sirupsen/logrus"
 	"os"
@@ -15,20 +16,32 @@ type Config struct {
 	FilePath string
 }
 
-type tomlConfig struct {
+type TomlConfig struct {
 	Database []Config
 }
 
-func MustNewConfig(configfile string) tomlConfig {
+var (
+	ErrCantFindConfig = errors.New("Config file is missing")
+)
+
+func NewConfig(configfile string) (*TomlConfig, error) {
 	_, err := os.Stat(configfile)
 	if err != nil {
-		log.Fatal("Config file is missing: ", configfile)
+		return nil, ErrCantFindConfig
 	}
 
-	var tomlconf tomlConfig
+	var tomlconf *TomlConfig
 	_, err = toml.DecodeFile(configfile, &tomlconf)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return tomlconf
+	return tomlconf, nil
+}
+
+func MustNewConfig(configfile *string) *TomlConfig {
+	config, err := NewConfig(*configfile)
+	if err != nil {
+		log.Fatalf("Cant parse config file: %s", err)
+	}
+	return config
 }

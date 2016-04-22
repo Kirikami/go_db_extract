@@ -59,16 +59,16 @@ func generateCSV(tablename, filepath string, records [][]string) error {
 
 func UserTableDataProvider(db *sqlx.DB, c config.Config) error {
 	users := []database.User{}
-	err := db.Select(&users, "SELECT * FROM users")
+	err := db.Select(&users, "SELECT * FROM users;")
 	if err != nil {
 		return ErrCantFetchData
 	}
-	records := make([][]string, len(users)-2)
+	records := make([][]string, len(users)-1)
 	for _, record := range users {
 		records = append(records, []string{strconv.Itoa(record.UserID), record.Name})
 	}
 	records = append(records, []string{fmt.Sprintf("There are %d records in database", len(users))})
-	err = generateCSV("users", c.FilePath, records)
+	err = generateCSV("users", c.FilePath, records[1:])
 	if err != nil {
 		return err
 	}
@@ -77,16 +77,16 @@ func UserTableDataProvider(db *sqlx.DB, c config.Config) error {
 
 func SalesTableDataProvider(db *sqlx.DB, c config.Config) error {
 	sales := []database.Seller{}
-	err := db.Select(&sales, "SELECT * FROM sales")
+	err := db.Select(&sales, "SELECT * FROM sales;")
 	if err != nil {
 		return ErrCantFetchData
 	}
-	records := make([][]string, len(sales)-2)
+	records := make([][]string, len(sales)-1)
 	for _, record := range sales {
 		records = append(records, []string{strconv.Itoa(record.OrderID), strconv.Itoa(record.UserID), strconv.FormatFloat(record.OrderAmount, 'f', 6, 64)})
 	}
 	records = append(records, []string{fmt.Sprintf("There are %d records in database", len(sales))})
-	err = generateCSV("sales", c.FilePath, records)
+	err = generateCSV("sales", c.FilePath, records[1:])
 	if err != nil {
 		return err
 	}
