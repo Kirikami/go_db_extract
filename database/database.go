@@ -9,24 +9,13 @@ import (
 	"github.com/kirikami/go_db_extract/config"
 )
 
-type User struct {
-	UserID int    `db:"user_id"`
-	Name   string `db:"name"`
-}
-
-type Seller struct {
-	OrderID     int     `db:"order_id"`
-	UserID      int     `db:"user_id"`
-	OrderAmount float64 `db:"order_amount"`
-}
-
 var (
 	ErrDbConnect = errors.New("Failed connect to database")
 )
 
 func NewDatabase(c config.Config) (*sqlx.DB, error) {
 	dbConnection := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", c.Username, c.Password, c.Host, c.Port, c.DbName)
-	db, err := sqlx.Open("mysql", dbConnection)
+	db, err := sqlx.Connect("mysql", dbConnection)
 	if err != nil {
 		return nil, ErrDbConnect
 	}

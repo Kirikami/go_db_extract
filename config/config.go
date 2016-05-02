@@ -25,17 +25,16 @@ var (
 )
 
 func NewConfig(configfile string) (*TomlConfig, error) {
-	_, err := os.Stat(configfile)
-	if err != nil {
+	if _, err := os.Stat(configfile); os.IsNotExist(err) {
 		return nil, ErrCantFindConfig
 	}
 
-	var tomlconf *TomlConfig
-	_, err = toml.DecodeFile(configfile, &tomlconf)
+	var tomlconf TomlConfig
+	_, err := toml.DecodeFile(configfile, &tomlconf)
 	if err != nil {
 		return nil, err
 	}
-	return tomlconf, nil
+	return &tomlconf, nil
 }
 
 func MustNewConfig(configfile *string) *TomlConfig {

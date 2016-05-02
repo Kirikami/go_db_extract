@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"github.com/kirikami/go_db_extract/config"
 	"github.com/kirikami/go_db_extract/database"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
@@ -156,4 +158,22 @@ func folderExists(path string) (bool, error) {
 		return false, nil
 	}
 	return true, err
+}
+
+func ArchiveDatabase(db *sqlx.DB, c config.Config) {
+	start := time.Now()
+	err := UserTableDataProvider(db, c)
+	if err != nil {
+		log.Fatalf("Failed to dump user database: %s", err)
+	}
+	err = SalesTableDataProvider(db, c)
+	if err != nil {
+		log.Fatalf("Failed to dump sales database: %s", err)
+	}
+	err = ArchiveFile(c.FilePath, ".")
+	if err != nil {
+		log.Fatalf("Archieving failed: %s", err)
+	}
+	secs := time.Since(start).Seconds()
+	fmt.Sprintf("%.2fs, %s", secs, db)
 }
