@@ -16,6 +16,7 @@ var (
 func NewDatabase(c config.Config) (*sqlx.DB, error) {
 	dbConnection := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true", c.Username, c.Password, c.Host, c.Port, c.DbName)
 	db, err := sqlx.Connect("mysql", dbConnection)
+	//err := db.Ping()
 	if err != nil {
 		return nil, ErrDbConnect
 	}

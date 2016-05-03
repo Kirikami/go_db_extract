@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"github.com/kirikami/go_db_extract/config"
 	"github.com/kirikami/go_db_extract/database"
@@ -32,6 +31,11 @@ var (
 var (
 	ErrCantCreateDirectory = errors.New("Cant create directory")
 )
+
+type Result struct {
+	DbName     string
+	FinishTime float64
+}
 
 var writeReult []string
 
@@ -160,20 +164,23 @@ func folderExists(path string) (bool, error) {
 	return true, err
 }
 
-func ArchiveDatabase(db *sqlx.DB, c config.Config) {
+func ArchiveDatabase(db *sqlx.DB, c config.Config, res chan<- Result, errors chan<- error) {
 	start := time.Now()
+	result := Result{}
 	err := UserTableDataProvider(db, c)
 	if err != nil {
-		log.Fatalf("Failed to dump user database: %s", err)
+		errors <- fmt.Errorf("Failed to dump user database: %s", err)
 	}
 	err = SalesTableDataProvider(db, c)
 	if err != nil {
-		log.Fatalf("Failed to dump sales database: %s", err)
+		errors <- fmt.Errorf("Failed to dump sales database: %s", err)
 	}
 	err = ArchiveFile(c.FilePath, ".")
 	if err != nil {
-		log.Fatalf("Archieving failed: %s", err)
+		errors <- fmt.Errorf("Archieving failed: %s", err)
 	}
 	secs := time.Since(start).Seconds()
-	fmt.Sprintf("%.2fs, %s", secs, db)
+	result.DbName = c.DbName
+	result.FinishTime = secs
+	res <- result
 }
