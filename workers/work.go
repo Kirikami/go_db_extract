@@ -13,16 +13,20 @@ type Work struct {
 }
 
 func NewWork(function func()) *Work {
+
 	return &Work{function, false}
+
 }
 
 func Worker(in chan *Work, out chan *Work) {
+
 	for {
 		work := <-in
 		work.Function()
 		work.Completed = true
 		out <- work
 	}
+
 }
 
 func DbWork(configs *config.TomlConfig) {
@@ -39,22 +43,27 @@ func DbWork(configs *config.TomlConfig) {
 		dumpDatabase := func() {
 			services.ArchiveDatabase(db, c, result, errors)
 		}
+
 		go func() {
 			pending <- NewWork(dumpDatabase)
 		}()
+
 	}
 
 	for i := 0; i < databases; i++ {
+
 		go Worker(pending, done)
+
 	}
 
 	for i := 0; i < databases; i++ {
 		<-done
+
 		select {
 		case res := <-result:
 			log.Infof("Database %s dump sucessful in %.3fs", res.DbName, res.FinishTime)
 		case err := <-errors:
-			log.Fatal(err.Error)
+			log.Fatal(err.Error())
 		}
 	}
 
