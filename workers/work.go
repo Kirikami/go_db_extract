@@ -52,7 +52,7 @@ func DbWork(configs *config.TomlConfig) {
 		<-done
 		select {
 		case res := <-result:
-			log.Infof("Database %s dump sucessful in %.2fs", res.DbName, res.FinishTime)
+			log.Infof("Database %s dump sucessful in %.3fs", res.DbName, res.FinishTime)
 		case err := <-errors:
 			log.Fatal(err.Error)
 		}
