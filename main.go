@@ -16,5 +16,5 @@ func main() {
 	configs := config.MustNewConfig(configfile)
 	workers.DbWork(configs)
 	secs := time.Since(start).Seconds()
-	log.Infof("Program finishing dump in %0.3fs", secs)
+	log.Infof("The program has finished dumping in %0.3fs", secs)
 }
